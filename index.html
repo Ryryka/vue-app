@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+
+    <title>Home</title>
+</head>
+
+<body>
+
+    <div id="app">
+
+        <div id="filter">
+            <label for="name">
+                <input type="text" id="name" placeholder="Введите имя" v-model="name">
+            </label>
+            <label for="lastname">
+                <input type="text" id="lastname" placeholder="Введите фамилию" v-model="lastname">
+            </label>
+            <label for="age">
+                <input type="number" id="age" placeholder="Введите возраст" v-model="age">
+            </label>
+            <div id="sex">
+                Пол
+                <label for="male">м
+                    <input type="checkbox" id="male" name="sex" value="m" v-model='male'>
+                </label>
+                <label for="female">ж
+                    <input type="checkbox" id="female" name="sex" value="f" v-model='female'>
+                </label>
+            </div>
+        </div>
+
+        <ul v-for="user in filteredUsers" class="user">
+            <li>
+                <span class="user__name"> {{ user.name }}</span>
+                <span class="user__lastname">{{user.lastname}}</span>
+            </li>
+            <li class="user__age">{{user.age}}</li>
+            <li class="user__sex">{{user.sex | sex}}</li>
+        </ul>
+    </div>
+
+    <script>
+        const app = new Vue({
+            el: '#app',
+            data: {
+                users: [],
+                name: '',
+                lastname: '',
+                age: '',
+                male: '',
+                female: ''
+            },
+            created() {
+                const _this = this
+                fetch('https://venbest-test.herokuapp.com')
+                    .then(response => response.json())
+                    .then(function (json) {
+                        _this.users = json
+                    })
+            },
+            filters: {
+                sex: function (value) {
+                    if (value == 'm') {
+                        return 'мужской'
+                    }
+                    if (value == 'f') {
+                        return 'женский'
+                    }
+                }
+            },
+            computed: {
+                filteredUsers: {
+                    cache: false,
+                    get() {
+                        return this.users.filter(
+                            function (user) {
+
+                                let selectedName = document.getElementById("name").value.toLowerCase();
+                                let selectedLastName = document.getElementById("lastname").value.toLowerCase();
+                                let selectedAge = document.getElementById("age").value;
+
+                                let userName = user.name.toLowerCase();
+                                let userLastName = user.lastname.toLowerCase();
+                                let userAge = user.age;
+                                let userSex = user.sex;
+
+                                let filterByName = userName.startsWith(selectedName)
+                                let filterByLastName = userLastName.startsWith(selectedLastName)
+
+                                if ((filterByName)
+                                    && (filterByLastName)
+                                    && ((userAge == selectedAge) || (selectedAge == ''))
+                                    && ((male.checked && userSex == male.value) || (!male.checked && !female.checked) || (female.checked && userSex == female.value))) {
+                                    return user;
+                                }
+
+                            }
+                        );
+                    }
+
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>
